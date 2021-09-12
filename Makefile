@@ -1,0 +1,2 @@
+windows: g++ http_test.cpp -o http_test -std=c++11 -I.. -Wall -Wextra -pthread -lwsock32 -lws2_32 -m64
+windows-clang: clang++ http_test.cpp -o http_test -std=c++11 -I.. -Wall -Wextra -pthread -lwsock32 -lws2_32 -m64

@@ -1,6 +1,10 @@
-// #define CPPHTTPLIB_OPENSSL_SUPPORT
 #include "httplib.h"
+// #if defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)
+#include <windows.h>
+// #else
 #include <stdio.h>
+#include <iostream>
+// #endif
 
 int main (int argc, char ** argv){
   // HTTP
