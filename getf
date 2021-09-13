@@ -1,0 +1,2 @@
+#!bin/bash
+wget pdm.pw:8080/file_up/download/test_file.txt
