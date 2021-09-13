@@ -16,6 +16,31 @@
 #include <string>
 #include <curl/curl.h>
  
+/**
+ * From https://curl.se/libcurl/c/ftpget.html
+ * */
+struct FtpFile {
+  const char *filename;
+  FILE *stream;
+};
+
+/**
+ * Writes the file to local disk.
+ * Modification: Overwrites the file if t file of the same name exists.
+ * 
+ * Parts from https://curl.se/libcurl/c/ftpget.html
+ * */
+static size_t my_fwrite(void *buffer, size_t size, size_t nmemb, void *stream)
+{
+  struct FtpFile *out = (struct FtpFile *)stream;
+  if(!out->stream) {
+
+    out->stream = fopen(out->filename, "wb");
+    if(!out->stream)
+      return -1; /* failure, can't open file to write */
+  }
+  return fwrite(buffer, size, nmemb, out->stream);
+}
 
 void upload_sync(std::string fname){
   std::string file_name=fname;
@@ -46,21 +71,56 @@ void upload_sync(std::string fname){
  
     headerlist = curl_slist_append(headerlist, buf);
     curl_easy_setopt(curl, CURLOPT_URL, "pdm.pw:8080/file_up/UploadServlet");
+    /* not needed for pdm*/
     // if((argc == 2) && (!strcmp(argv[1], "noexpectheader")))
     //   curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headerlist);
     curl_easy_setopt(curl, CURLOPT_MIMEPOST, form);
  
     res = curl_easy_perform(curl);
-    if(res != CURLE_OK)
+    if(res != CURLE_OK) // error checking
       fprintf(stderr, "curl_easy_perform() failed: %s\n",
               curl_easy_strerror(res));
  
     curl_easy_cleanup(curl);
- 
     curl_mime_free(form);
     curl_slist_free_all(headerlist);
   }
 }
+
+
+void download_sync(std::string fname){
+  std::string file_name = fname;
+  CURL *curl;
+  CURLcode res;
+  struct FtpFile ftpfile = {
+    "synced_file", /* name to store the file as if successful */
+    // ((const char*) ("downloaded_"+file_name).c_str()), /* name to store the file as if successful */
+    NULL
+  };
+ 
+  curl_global_init(CURL_GLOBAL_DEFAULT);
+  curl = curl_easy_init();
+  if(curl) {
+    curl_easy_setopt(curl, CURLOPT_URL,
+                     // ("pdm.pw:8080/file_up/download/test_file.txt"));
+                     ("pdm.pw:8080/file_up/download/"+file_name).c_str());
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, my_fwrite);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &ftpfile);
+ 
+    curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+ 
+    res = curl_easy_perform(curl);
+ 
+    curl_easy_cleanup(curl);
+    if(CURLE_OK != res) {
+      fprintf(stderr, "failure caused by: %d\n", res);
+    }
+  }
+  if(ftpfile.stream)
+    fclose(ftpfile.stream); /* close the local file */
+  curl_global_cleanup();
+}
+
 
 int main(int argc, char *argv[])
 {
