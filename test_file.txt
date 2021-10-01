@@ -1,5 +1,9 @@
 test file1
 test file2
+test file3test file1
+test file2
+test file3test file1
+test file2
 test file3
 this is a secret message that no one should see if they don't have the password
 
