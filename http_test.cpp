@@ -16,6 +16,7 @@
 #include <string>
 #include <curl/curl.h>
  
+std::string test_user="username3";
 /**
  * From https://curl.se/libcurl/c/ftpget.html
  * */
@@ -98,7 +99,6 @@ void upload_sync(std::string fname){
 
 void upload_sync_multi(std::string fname){
   std::string file_name=fname;
-  std::string test_user="username3";
   CURL *curl;
   CURLcode res;
  
@@ -174,7 +174,7 @@ void download_sync(std::string fname){
   if(curl) {
     curl_easy_setopt(curl, CURLOPT_URL,
                      // ("pdm.pw:8080/file_up/download/test_file.txt"));
-                     ("pdm.pw:8080/file_up/download/"+file_name).c_str());
+                     ("pdm.pw:8080/file_up/download/"+test_user+"/"+file_name).c_str());
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, my_fwrite);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &ftpfile);
  
@@ -197,6 +197,6 @@ void download_sync(std::string fname){
 int main(int argc, char *argv[])
 {
   upload_sync_multi("test_file.txt");
-  // download_sync("test_file.txt");
+  download_sync("test_file.txt");
   return 0;
 }
